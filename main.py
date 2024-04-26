@@ -10,9 +10,30 @@ session = requests_html.HTMLSession()
 asession = requests_html.AsyncHTMLSession()
 
 class Year2012():
+    """
+        Returns a dataframe for different rounds in 2012 ladder.
+    """
+    def __init__(self):
+        self.data = {
+            'Position': [],
+            'Club': [],
+            'P': [],
+            'WR': [],
+            'Pts': [],
+            '%': [],
+            'W': [],
+            'L': [],
+            'D': [],
+            'PF': [],
+            'PA': [],
+            'Form': [],
+            'Latest': [],
+            'Up Next': [],
+            }
+
     def webscrape(self, url):
         """
-        Does preliminary webscrapping
+        Does preliminary webscrapping.
         """
         # Fetch the webpage
         response = session.get(url)
@@ -35,87 +56,83 @@ class Year2012():
         return ladder
 
 
+    def clear_data(self):
+        """
+        Clears all data so can be used again. 
+        Called at the end of each function.
+        """
+        for key in self.data:
+            self.data[key].clear()
+
+
     def round1(self):
-        """
-        Returns a dataframe for round 1 2012 ladder.
-        """
         url = 'https://www.afl.com.au/ladder?Competition=1&Season=2&Round=5'
         ladder = self.webscrape(url)
-
-        data ={
-            'Position': [],
-            'Club': [],
-            'P': [],
-            'WR': [],
-            'Pts': [],
-            '%': [],
-            'W': [],
-            'L': [],
-            'D': [],
-            'PF': [],
-            'PA': [],
-            'Form': [],
-            'Latest': [],
-            'Up Next': [],
-            }
 
         count = 0
         # Puts the information into the dict
         for i in range(13, len(ladder)):
             if count == 0:
-                data['Position'].append(ladder[i])
+                self.data['Position'].append(ladder[i])
 
             elif count == 1:
-                data['Club'].append(ladder[i])
+                self.data['Club'].append(ladder[i])
 
             elif count == 2:
-                data['P'].append(ladder[i])
+                self.data['P'].append(ladder[i])
             
             elif count == 3:
-                data['WR'].append(ladder[i])
+                self.data['WR'].append(ladder[i])
 
             elif count == 4:
-                data['Pts'].append(ladder[i])
+                self.data['Pts'].append(ladder[i])
 
             elif count == 5:
-                data['%'].append(ladder[i])
+                self.data['%'].append(ladder[i])
 
             elif count == 6:
-                data['W'].append(ladder[i])
+                self.data['W'].append(ladder[i])
 
             elif count == 7:
-                data['L'].append(ladder[i])
+                self.data['L'].append(ladder[i])
 
             elif count == 8:
-                data['D'].append(ladder[i])
+                self.data['D'].append(ladder[i])
             
             elif count == 9:
-                data['PF'].append(ladder[i])
+                self.data['PF'].append(ladder[i])
 
             elif count == 10:
-                data['PA'].append(ladder[i])
+                self.data['PA'].append(ladder[i])
 
             elif count == 11:
-                data['Form'].append(ladder[i])
+                self.data['Form'].append(ladder[i])
 
-            elif count == 12:
-                data['Latest'].append(ladder[i])
 
-            elif count == 13:
-                data['Up Next'].append(ladder[i])
-                
             if count == 14:
                 count = -1
 
             count += 1
-            
-        df = pd.DataFrame(data=data)
+        
+        df = pd.DataFrame(data=self.data)
+        self.clear_data()
         print(df)
         return df
     
-    def round2():
-        pass
+
+    def round2(self):
+        url = "https://www.afl.com.au/ladder?Competition=1&Season=2&Round=6"
+        ladder = self.webscrape(url)
+
+        # print(ladder)
+        for idx, el in enumerate(ladder):
+            if idx % 13 == 0 :
+                self.data['Position'].append(el)
+
+        print(self.data)
+        
 
 year_2012 = Year2012()
 year_2012.round1()
+# year_2012.round2()
 
