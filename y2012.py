@@ -6,11 +6,17 @@ import requests_html
 session = requests_html.HTMLSession()
 asession = requests_html.AsyncHTMLSession()
 
-class Round1():
+ladderURL = "https://www.afl.com.au/ladder?Competition=1&Season=52&Round=781"
+fixtureURL = "https://www.afl.com.au/fixture?Competition=1&Season=52&Round=930"
+playerMatchStatsURL = "https://www.afl.com.au/afl/matches/233#player-stats"
+
+class GetLadder():
     """
-        Returns a dataframe for different rounds in 2012 ladder.
+    Gets info of ladder position for particular year and round
     """
-    def __init__(self):
+    def __init__(self, ladderURL):
+        self.ladderURL = ladderURL
+
         self.dataLadder = {
             'Position': [],
             'Club': [],
@@ -23,19 +29,9 @@ class Round1():
             'D': [],
             'PF': [],
             'PA': [],
-            'Form': [],
             }
         
-        self.dataFixture = {
-            'Date': [],
-            'T1': [],
-            'T2': [],
-            'T1Score': [],
-            'T2Score': [],
-            'Venue': []
-        }
-
-    def clear_data(self):
+    def clear_ladder(self):
         """
         Clears all data so can be used again. 
         Called at the end of each function.
@@ -43,11 +39,9 @@ class Round1():
         for key in self.dataLadder:
             self.dataLadder[key].clear()
 
-
     def ladder(self):
-        url = 'https://www.afl.com.au/ladder?Competition=1&Season=2&Round=5'
         # Fetch the webpage
-        response = session.get(url)
+        response = session.get(self.ladderURL)
 
         # Render JavaScript
         response.html.render()
@@ -61,68 +55,75 @@ class Round1():
         # Get rid of all the n\ and put it into a dataframe
         ladder = re.sub("\n", "|", ladders).split('|')
 
-        # Get rid of the word 'Top 8', to make arr make sense
-        ladder.remove('Top 8')
-        print(ladder)
+        # Get rid of the specific words and split 'PosClub' into 'Pos' and 'Club'
+        stopWords = ['Top 8', '-', 'Form', 'Latest', 'Up Next']
+        ladder = [word for word in ladder if word not in stopWords]
+        ladder[1:1] = 'Pos', 'Club'
+        ladder.pop(0)
 
-        # count = 0
-        # # Puts the information into the dict
-        # for i in range(13, len(ladder)):
-        #     if count == 0:
-        #         self.dataLadder['Position'].append(ladder[i])
+        # Puts the information into the dict
+        for idx, el in enumerate(ladder):
+            if idx > 0 and idx % 11 == 0:
+                self.dataLadder['Position'].append(el)
 
-        #     elif count == 1:
-        #         self.dataLadder['Club'].append(ladder[i])
+            elif idx > 1 and idx % 11 == 1:
+                self.dataLadder['Club'].append(el)
 
-        #     elif count == 2:
-        #         self.dataLadder['P'].append(ladder[i])
+            elif idx > 2 and idx % 11 == 2:
+                self.dataLadder['P'].append(el)
             
-        #     elif count == 3:
-        #         self.dataLadder['WR'].append(ladder[i])
+            elif idx > 3 and idx % 11 == 3:
+                self.dataLadder['WR'].append(el)
 
-        #     elif count == 4:
-        #         self.dataLadder['Pts'].append(ladder[i])
+            elif idx > 4 and idx % 11 == 4:
+                self.dataLadder['Pts'].append(el)
 
-        #     elif count == 5:
-        #         self.dataLadder['%'].append(ladder[i])
+            elif idx > 5 and idx % 11 == 5:
+                self.dataLadder['%'].append(el)
 
-        #     elif count == 6:
-        #         self.dataLadder['W'].append(ladder[i])
+            elif idx > 6 and idx % 11  == 6:
+                self.dataLadder['W'].append(el)
 
-        #     elif count == 7:
-        #         self.dataLadder['L'].append(ladder[i])
+            elif idx > 7 and idx % 11  == 7:
+                self.dataLadder['L'].append(el)
 
-        #     elif count == 8:
-        #         self.dataLadder['D'].append(ladder[i])
+            elif idx > 8 and idx % 11  == 8:
+                self.dataLadder['D'].append(el)
             
-        #     elif count == 9:
-        #         self.dataLadder['PF'].append(ladder[i])
+            elif idx > 9 and idx % 11  == 9:
+                self.dataLadder['PF'].append(el)
 
-        #     elif count == 10:
-        #         self.dataLadder['PA'].append(ladder[i])
+            elif idx > 10 and idx % 11  == 10:
+                self.dataLadder['PA'].append(el)
+   
+        df = pd.DataFrame(data=self.dataLadder)
+        self.clear_ladder()
+        print(df)
+        return df
 
-        #     elif count == 11:
-        #         self.dataLadder['Form'].append(ladder[i])
 
-
-        #     if count == 14:
-        #         count = -1
-
-        #     count += 1
+class GetFixture():
+    """
+    Gets the fixture for particular year and round
+    """
+    def __init__(self, fixtureURL):
+        self.fixtureURL = fixtureURL
         
-        # df = pd.DataFrame(data=self.dataLadder)
-        # self.clear_data()
-        # print(df)
-        # return df
-
+        self.dataFixture = {
+            'Date': [],
+            'T1': [],
+            'T2': [],
+            'T1Score': [],
+            'T2Score': [],
+            'Venue': []
+        }
 
     def fixture(self):
         """
         Shows information on which team played, respective scores and location
         """
-        url = 'https://www.afl.com.au/fixture?Competition=1&Season=2&Round=6'
         # Fetch the webpage
-        response = session.get(url)
+        response = session.get(self.fixtureURL)
 
         # Render JavaScript
         response.html.render()
@@ -174,10 +175,33 @@ class Round1():
         return df
         
 
-        
+class GetPlayeMatchStats():
+    """
+    Get player stat for particular game
+    """
+    def __init__(self, url) -> None:
+        self.url = url
+    
+    def playerMatchStat(self):
+        # Fetch the webpage
+        response = session.get(self.url)
 
-        
+        # Render JavaScript
+        response.html.render()
 
-r1 = Round1()
-r1.ladder()
+        # Scrape the content, only want "wrapper" class
+        content = response.html.find('.stats-table__table')
 
+        for i in content:
+            pms = i.text
+
+        pms = re.sub("\n", "|", pms).split('|')
+        print(pms)
+
+# fix = GetFixture(fixtureURL)
+# lad = GetLadder(ladderURL)
+pms = GetPlayeMatchStats(playerMatchStatsURL)
+
+# fix.fixture()
+# lad.ladder()
+pms.playerMatchStat()
