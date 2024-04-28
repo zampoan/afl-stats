@@ -181,6 +181,22 @@ class GetPlayeMatchStats():
     """
     def __init__(self, url) -> None:
         self.url = url
+        self.data = {
+            'Player': [],
+            'AF': [],
+            'G': [],
+            'B': [],
+            'D': [],
+            'K': [],
+            'H': [],
+            'M': [],
+            'T': [],
+            'HO': [],
+            'C': [],
+            'MG': [],
+            "GA": [],
+            'ToG%': []
+        }
     
     def playerMatchStat(self):
         # Fetch the webpage
@@ -196,7 +212,61 @@ class GetPlayeMatchStats():
             pms = i.text
 
         pms = re.sub("\n", "|", pms).split('|')
-        print(pms)
+
+        # Get specific words only   
+        stopwords = ['Ranked by (ascending)']
+        pms = [word for word in pms if word not in stopwords]
+
+        for idx, el in enumerate(pms):
+            if idx > 1 and idx % 15 == 1:
+                self.data['Player'].append(el)
+
+            elif idx > 2 and idx % 15 == 2:
+                self.data['AF'].append(el)
+
+            elif idx > 3 and idx % 15 == 3:
+                self.data['G'].append(el)
+
+            elif idx > 4 and idx % 15 == 4:
+                self.data['B'].append(el)
+
+            elif idx > 5 and idx % 15 ==5:
+                self.data['D'].append(el)
+
+            elif idx > 6 and idx % 15 == 6:
+                self.data['K'].append(el)
+
+            elif idx > 7 and idx % 15 == 7:
+                self.data['H'].append(el)
+
+            elif idx > 8 and idx % 15 == 8:
+                self.data['M'].append(el)
+
+            elif idx > 9 and idx % 15 == 9:
+                self.data['T'].append(el)
+
+            elif idx > 10 and idx % 15 == 10:
+                self.data['HO'].append(el)
+
+            elif idx > 11 and idx % 15 == 11:
+                self.data['C'].append(el)
+
+            elif idx > 12 and idx % 15 == 12:
+                self.data['MG'].append(el)
+
+            elif idx > 13 and idx % 15 == 13:
+                self.data['GA'].append(el)
+
+            elif idx > 14 and idx % 15 == 14:
+                self.data['ToG%'].append(el)
+
+        df = pd.DataFrame(data=self.data)
+        print(df)
+
+        
+
+
+
 
 # fix = GetFixture(fixtureURL)
 # lad = GetLadder(ladderURL)
